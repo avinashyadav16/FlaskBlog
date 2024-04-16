@@ -1,5 +1,5 @@
 {% extends "layout.html" %} {% block content %}
-<div class="content-section">
+<div class="content-section rounded-3" style="margin-left: 7rem">
   <form method="POST" action="">
     {{ form.hidden_tag() }}
     <fieldset class="form-group">
@@ -60,7 +60,8 @@
   </form>
 </div>
 <div
-  class="border-top border-bottom pt-1 pb-1 d-flex justify-content-center align-items-center"
+  class="pt-1 pb-1 d-flex justify-content-center align-items-center"
+  style="margin-left: 7rem"
 >
   <small class="text-muted">
     Already Have An Account?
