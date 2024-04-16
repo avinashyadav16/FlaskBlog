@@ -68,7 +68,7 @@ A full-fledged blog application build using flask. FlaskBlog is a comprehensive 
    ...   db.session.commit()
    ```
 
-#### Encrypting and Verifying Passwords with Flask-Bcrypt
+#### Encrypting and Verifying Passwords with Flask-Bcrypt:
 
 ```bash
 $ python
