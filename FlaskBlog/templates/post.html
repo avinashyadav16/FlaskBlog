@@ -10,7 +10,9 @@
             alt="author profile image"
             style="width: 30px; height: 30px"
           />
-          <a class="mr-2 text-decoration-none" href="#"
+          <a
+            class="mr-2 text-decoration-none"
+            href="{{ url_for('user_posts', username=post.author.username) }}"
             ><em>{{ post.author.username }}</em></a
           >
         </div>
@@ -40,7 +42,7 @@
     </div>
     {% else %}
     <div class="d-flex justify-content-end">
-      <button type="button" class="btn btn-outline-primary btn-sm m-1">
+      <button type="button" class="btn btn-outline-danger btn-sm m-1">
         <i class="bi bi-heart-fill"></i> Like
       </button>
     </div>

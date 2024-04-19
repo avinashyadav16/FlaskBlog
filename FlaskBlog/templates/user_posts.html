@@ -1,4 +1,11 @@
-{% extends "layout.html" %} {% block content %} {% for post in posts.items %}
+{% extends "layout.html" %} {% block content %}
+<div class="d-flex justify-content-between">
+  <h3 class="mb-3" style="margin-left: 7rem">
+    Posts By: <em>{{ user.username }}</em>
+  </h3>
+  <h3>[ {{ posts.total }} ]</h3>
+</div>
+{% for post in posts.items %}
 <article class="media content-section rounded-3" style="margin-left: 7rem">
   <div class="media-body">
     <div class="article-metadata d-flex justify-content-between">
@@ -51,7 +58,7 @@
   right_current=1) %} {% if page_num %} {% if posts.page == page_num %}
   <a
     class="btn btn-secondary me-1 ms-1"
-    href="{{ url_for('home', page=page_num) }}"
+    href="{{ url_for('user_posts', username=user.username, page=page_num) }}"
   >
     {{ page_num }}
   </a>
@@ -59,7 +66,7 @@
   {% else %}
   <a
     class="btn btn-outline-secondary me-1 ms-1"
-    href="{{ url_for('home', page=page_num) }}"
+    href="{{ url_for('user_posts', username=user.username, page=page_num) }}"
   >
     {{ page_num }}
   </a>
