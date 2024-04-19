@@ -2,14 +2,34 @@
 <article class="media content-section rounded-3" style="margin-left: 7rem">
   <div class="media-body">
     <div class="article-metadata d-flex justify-content-between">
-      <a class="mr-2 text-decoration-none" href="#"
-        ><em>{{ post.author }}</em></a
+      <div class="d-flex justify-content-start">
+        <img
+          class="rounded-circle article-img mb-1"
+          src="{{url_for('static', filename='Public/Images/' + post.author.image_file)}}"
+          alt="author profile image"
+          style="width: 30px; height: 30px"
+        />
+        <a class="mr-2 text-decoration-none" href="#"
+          ><em>{{ post.author.username }}</em></a
+        >
+      </div>
+      <small class="text-muted"
+        >{{ post.date_posted.strftime('%B %d, %Y') }}</small
       >
-      <small class="text-muted">{{ post.date_posted }}</small>
     </div>
 
-    <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
+    <h2>
+      <a
+        class="article-title text-decoration-none"
+        href="{{url_for('post', post_id=post.id)}}"
+        >{{ post.title }}</a
+      >
+    </h2>
+    {% set words = post.content.split() %} {% if words|length > 25 %}
+    <p class="article-content">{{ ' '.join(words[:25]) }}...</p>
+    {% else %}
     <p class="article-content">{{ post.content }}</p>
+    {% endif %}
   </div>
 </article>
 

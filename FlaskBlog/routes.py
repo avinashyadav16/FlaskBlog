@@ -1,32 +1,35 @@
 import os
 import secrets
 from PIL import Image
-from flask import render_template, url_for, flash, redirect, request
-from FlaskBlog.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from flask import render_template, url_for, flash, redirect, request, abort
+from FlaskBlog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from FlaskBlog.models import User, Post
 from FlaskBlog import app, db, bcrypt
 from flask_login import login_user, current_user, logout_user, login_required
 
-POSTS = [
-    {
-        'author': 'Avinash Yadav',
-        'title': 'All About GEN-AI',
-        'content': 'GEN-AI stands for General Artificial Intelligence, an advanced form of artificial intelligence that is capable of performing any intellectual task that a human being can. In this post, we explore the potential, challenges, and future prospects of GEN-AI.',
-        'date_posted': 'April 14, 2024'
-    },
-    {
-        'author': 'New User',
-        'title': 'Plateau Of Latent Potential',
-        'content': 'The Plateau of Latent Potential refers to a phase in machine learning and artificial intelligence where advancements appear to stagnate. However, beneath the surface, significant progress is being made in refining algorithms, improving data processing capabilities, and pushing the boundaries of what AI can achieve.',
-        'date_posted': 'March 29, 2024'
-    }
-]
+
+# DUMMY POST FOR INITIAL TESTING:
+# POSTS = [
+#     {
+#         'author': 'Avinash Yadav',
+#         'title': 'All About GEN-AI',
+#         'content': 'GEN-AI stands for General Artificial Intelligence, an advanced form of artificial intelligence that is capable of performing any intellectual task that a human being can. In this post, we explore the potential, challenges, and future prospects of GEN-AI.',
+#         'date_posted': 'April 14, 2024'
+#     },
+#     {
+#         'author': 'Admin',
+#         'title': 'Plateau Of Latent Potential',
+#         'content': 'The Plateau of Latent Potential refers to a phase in machine learning and artificial intelligence where advancements appear to stagnate. However, beneath the surface, significant progress is being made in refining algorithms, improving data processing capabilities, and pushing the boundaries of what AI can achieve.',
+#         'date_posted': 'March 29, 2024'
+#     }
+# ]
 
 
 # Decorator
 # localhost:5000/
 @app.route("/")
 def home():
+    POSTS = Post.query.all()
     return render_template('home.html', posts=POSTS)
 
 
@@ -110,6 +113,58 @@ def account():
     image_file = url_for(
         'static', filename='Public/Images/' + current_user.image_file)
     return render_template('account.html', title='Account', image_file=image_file, form=form)
+
+
+@app.route('/post/new', methods=['GET', 'POST'])
+@login_required
+def new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title=form.title.data,
+                    content=form.content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('New post has been created!', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_post.html', title='New Post', form=form, legend='New Post')
+
+
+@app.route("/post/<int:post_id>")
+def post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post.html', title=post.title, post=post)
+
+
+@app.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('Your post has been updated!', 'success')
+        return redirect(url_for('post', post_id=post.id))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+    return render_template('create_post.html', title='Update Post',
+                           form=form, legend='Update Post')
+
+
+@app.route("/post/<int:post_id>/delete", methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('home'))
 
 
 @app.route('/logout')
