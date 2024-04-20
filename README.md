@@ -82,3 +82,41 @@ $ python
 >>> hashed_password
 >>> bcrypt.check_password_hash(hashed_password, password)
 ```
+
+#### Generating Secure Time System Tokens:
+
+```bash
+$ python
+```
+
+1. Import Required Module:
+
+   ```bash
+   >>> from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+   ```
+
+2. Initialize Serializer:
+
+   ```bash
+   >>> s = Serializer('secret', 30)
+   ```
+
+3. Generate Token:
+
+   ```bash
+   >>> token = s.dumps({'user_id': 1}).decode('utf-8')
+   ```
+
+4. Access Token:
+
+   ```bash
+   >>> token
+   'eyJhbGciOiJIUzUxMiIsImlhdCI6MTcxMzY0MTA4MSwiZXhwIjoxNzEzNjQxMTExfQ.eyJ1c2VyX2lkIjoxfQ.mIftgDnRcaCAfzp68k88QGO_i4ajWyqFGmbajLAm7p-ay3n8hxNTBZh1sbpXSe_lpMkLMsx74ybKOCKvOXjJpg'
+   ```
+
+5. Verify Token:
+
+   ```bash
+   >>> s.loads(token)   # Access within 30 seconds
+   {'user_id': 1}
+   ```
