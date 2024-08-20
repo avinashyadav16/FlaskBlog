@@ -198,12 +198,15 @@ If you did not make this request then simply ignore this email and no changes wi
 def reset_request():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
+
     form = RequestResetForm()
+
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         send_reset_email(user)
-        flash('E-mail has been sent to reset your password.', 'info')
+        flash('A password reset link has been sent to your email.', 'info')
         return redirect(url_for('login'))
+
     return render_template('reset_request.html', title='Reset Password', form=form)
 
 
@@ -211,11 +214,16 @@ def reset_request():
 def reset_token(token):
     if current_user.is_authenticated:
         return redirect(url_for('home'))
+
     user = User.verify_reset_token(token)
+
     if user is None:
+        print(f"Invalid or expired token: {token}")
         flash('Entered an invalid or expired token', 'warning')
         return redirect(url_for('reset_request'))
+
     form = ResetPasswordForm()
+
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(
             form.password.data).decode('utf-8')
@@ -223,6 +231,7 @@ def reset_token(token):
         db.session.commit()
         flash('Your password has been updated!', 'success')
         return redirect(url_for('login'))
+
     return render_template('reset_token.html', title='Reset Password', form=form)
 
 

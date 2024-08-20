@@ -1,4 +1,5 @@
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous.jws import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import BadSignature, SignatureExpired
 from typing import Optional
 from FlaskBlog import db, login_manager, app
 from datetime import datetime, timezone
@@ -22,27 +23,39 @@ class User(db.Model, UserMixin):
     posts = db.relationship('Post', backref='author',
                             lazy=True)
 
-    def get_reset_token(self, expires_sec=1200):
+    # def get_reset_token(self, expires_sec=1800):
+    #     s = Serializer(app.config['SECRET_KEY'], expires_sec)
+    #     return s.dumps({'user_id': self.id}).decode('utf-8')
+
+    @classmethod
+    def get_reset_token(cls, user_id, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)
-        return s.dumps({'user_id': self.id}).decode('utf-8')
+        return s.dumps({'user_id': user_id}).decode('utf-8')
 
     @staticmethod
-    # def verify_reset_token(token):
-    def verify_reset_token(token: str) -> Optional['User']:
+    def verify_reset_token(token):
         s = Serializer(app.config['SECRET_KEY'])
         try:
-            data_tuple = s.loads(token)
-
-            # Extract the data from the tuple
-            data: dict = data_tuple[0]
-
-            # user_id can be None
-            user_id: Optional[int] = data.get('user_id')
-            if user_id is None:
-                return None
             # user_id = s.loads(token)['user_id']
-        except:
+            decoded_data = s.loads(token)
+            user_id = s.loads(token)[0].get('user_id')
+            # Check if the token is expired
+            # Check if the token is expired
+            if 'exp' in decoded_data and datetime.now(timezone.utc) > datetime.fromtimestamp(decoded_data['exp'], timezone.utc):
+                raise SignatureExpired('Token expired')
+
+        except SignatureExpired:
+            print("Token expired")
             return None
+
+        except BadSignature:
+            print("Invalid token")
+            return None
+
+        except:
+            print("Error decoding token")
+            return None
+
         return User.query.get(user_id)
 
     def __repr__(self):
